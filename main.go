@@ -41,7 +41,7 @@ func deleteMovie(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movies)
 } 
 
-funct getMovie(w http.ResponseWriter, r *http.Request) {
+func getMovie(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	for _, item := range movies {
@@ -52,10 +52,10 @@ funct getMovie(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func createMovie(w http.ResponseWriter, r *htp.Request) {
+func createMovie(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var movie Movie
-	_ = json.NewEncoder(r.Body).Decode(&movie)
+	_ = json.NewDecoder(r.Body).Decode(&movie)
 	movie.ID = strconv.Itoa(rand.Intn(100000000))
 	movies = append(movies, movie)
 	json.NewEncoder(w).Encode(movie)
@@ -64,35 +64,29 @@ func createMovie(w http.ResponseWriter, r *htp.Request) {
 func updateMovie(w http.ResponseWriter, r *http.Request) {
 	// set json content type
 	w.Header().Set("Content-Type", "application/json")
-	// params
+	// access the params
 	params := mux.Vars(r)
-	// loop over the movies, range
+	// loop over the movies
 	for index, item := range movies {
 		if item.ID == params["id"] {
 			// delete the movie with matching id
 			movies = append(movies[:index], movies[index+1:]...)
-			break
+			// add the new movie sent in the post body
+			var movie Movie
+			_ = json.NewDecoder(r.Body).Decode(&movie)
+			movie.ID = strconv.Itoa(rand.Intn(100000000))
+			movies = append(movies, movie)
+			json.NewEncoder(w).Encode(movie)
+			return
 		}
 	}
-	// add a new movie - the movie sent in the post body
-	var movie Movie
-	_ = json.NewEncoder(r.Body).Decode(&movie)
-	movie.ID = strconv.Itoa(rand.Intn(100000000))
-	movies = append(movies, movie)
-	json.NewEncoder(w).Encode(movie)
 }
 
 func main() {
 	router := mux.NewRouter()
 
-	movies = append(movies, Movie{
-		ID: "1", ISBN: "438227", Title: "Movie One", 
-		Director : &Director{Firstname: "John", Lastname: "Doe"}
-	})
-	movies = append(movies, Movie{
-		ID: "2", ISBN: "438228", Title: "Movie Two", 
-		Director : &Director{Firstname: "Bob", Lastname: "Smith"}
-	})
+	movies = append(movies, Movie{ID: "1", ISBN: "438227", Title: "Movie One", Director : &Director{Firstname: "John", Lastname: "Doe"}})
+	movies = append(movies, Movie{ID: "2", ISBN: "438228", Title: "Movie Two", Director : &Director{Firstname: "Bob", Lastname: "Smith"}})
 	router.HandleFunc("/movies", getMovies).Methods("GET")
 	router.HandleFunc("/movies/{id}", getMovie).Methods("GET")
 	router.HandleFunc("/movies", createMovie).Methods("POST")

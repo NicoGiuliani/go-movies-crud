@@ -74,7 +74,7 @@ func updateMovie(w http.ResponseWriter, r *http.Request) {
 			// add the new movie sent in the post body
 			var movie Movie
 			_ = json.NewDecoder(r.Body).Decode(&movie)
-			movie.ID = strconv.Itoa(rand.Intn(100000000))
+			movie.ID = params["id"]
 			movies = append(movies, movie)
 			json.NewEncoder(w).Encode(movie)
 			return

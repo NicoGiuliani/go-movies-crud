@@ -38,6 +38,7 @@ func deleteMovie(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+	json.NewEncoder(w).Encode(movies)
 } 
 
 funct getMovie(w http.ResponseWriter, r *http.Request) {
@@ -45,12 +46,41 @@ funct getMovie(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	for _, item := range movies {
 		if item.ID == params["id"] {
-			json.NewEncoder.Encode(item)
+			json.NewEncoder(w).Encode(item)
 			return
 		}
 	}
 }
 
+func createMovie(w http.ResponseWriter, r *htp.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var movie Movie
+	_ = json.NewEncoder(r.Body).Decode(&movie)
+	movie.ID = strconv.Itoa(rand.Intn(100000000))
+	movies = append(movies, movie)
+	json.NewEncoder(w).Encode(movie)
+}
+
+func updateMovie(w http.ResponseWriter, r *http.Request) {
+	// set json content type
+	w.Header().Set("Content-Type", "application/json")
+	// params
+	params := mux.Vars(r)
+	// loop over the movies, range
+	for index, item := range movies {
+		if item.ID == params["id"] {
+			// delete the movie with matching id
+			movies = append(movies[:index], movies[index+1:]...)
+			break
+		}
+	}
+	// add a new movie - the movie sent in the post body
+	var movie Movie
+	_ = json.NewEncoder(r.Body).Decode(&movie)
+	movie.ID = strconv.Itoa(rand.Intn(100000000))
+	movies = append(movies, movie)
+	json.NewEncoder(w).Encode(movie)
+}
 
 func main() {
 	router := mux.NewRouter()
